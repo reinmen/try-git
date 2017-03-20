@@ -1,0 +1,8 @@
+machine:
+  timezone:
+    Europe/Istanbul
+  ruby:
+    version: 2.3.3
+compile:
+  override:
+    - bundle exec rake
