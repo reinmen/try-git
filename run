@@ -74,7 +74,7 @@ GITHUB_TOKEN = ENV['GITHUB_TOKEN']
 def main
   hub = Github.new(GITHUB_ORGANIZATION, GITHUB_TOKEN)
   hub.create_org_repo name: 'foo'
-  `echo "foo" >f
+  `echo "foo" >f`
   `git add .`
   `git commit -m "Listeyi ekle"`
   `git push origin yap`
