@@ -1,0 +1,82 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'net/https'
+require 'openssl'
+require 'open3'
+require 'tmpdir'
+require 'uri'
+
+# Refinements
+module Refinements
+  refine String do
+    def safe_capitalize
+      self[0] = self[0].tr('çğıişöü', 'ÇĞIİŞÖÜ')
+      capitalize
+    end
+
+    def titleize
+      tr('-', ' ').safe_capitalize
+    end
+    
+    def asciify
+      tr('ıçöğüşİÇÖĞÜŞ', 'icogusICOGUS')
+    end
+  end
+end
+
+using Refinements
+
+# Github, organizasyon depolarıyla ilgili birkaç temel işlevi sarmalayan ve tüm
+# lojikten sorumlu olan sınıftır.
+class Github
+  API_ENDPOINT = 'https://api.github.com'.freeze
+
+  attr_reader :user, :access_token
+
+  def initialize(user, access_token)
+    @user = user
+    @access_token = access_token
+
+    uri = URI(API_ENDPOINT)
+    @http = Net::HTTP.new(uri.host, uri.port)
+    @http.use_ssl = true
+    @http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  end
+
+  def create_org_repo(options = {})
+    post "/orgs/#{user}/repos", options
+  end
+
+  def list_org_repos(options = {})
+    get "/orgs/#{user}/repos", options
+  end
+
+  private
+
+  def get(url, options = {})
+    r = Net::HTTP::Get.new(url)
+    r.body = options.to_json
+    JSON.parse @http.request(r).body
+  end
+
+  def post(url, options = {})
+    r = Net::HTTP::Post.new(url)
+    r.body = options.to_json
+    r.add_field 'Authorization', "token #{access_token}"
+    JSON.parse @http.request(r).body
+  end
+end
+
+GITHUB_ORGANIZATION = ENV['GITHUB_ORGANIZATION']
+GITHUB_TOKEN = ENV['GITHUB_TOKEN']
+
+def main
+  hub = Github.new(GITHUB_ORGANIZATION, GITHUB_TOKEN)
+  hub.create_org_repo name: 'foo'
+rescue => error
+  puts error
+  exit 1
+end
+
+main if __FILE__ == $PROGRAM_NAME
