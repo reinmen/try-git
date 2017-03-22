@@ -74,12 +74,7 @@ GITHUB_TOKEN = ENV['GITHUB_TOKEN']
 def main
   hub = Github.new(GITHUB_ORGANIZATION, GITHUB_TOKEN)
   hub.create_org_repo name: 'foo'
-  `git config --global user.email "huseyintekinaslan@gmail.com"`
-  `git config --global user.name "cezmi"`
-  `echo "foo" >f`
-  `git add .`
-  `git commit -m "Listeyi ekle"`
-  `git push origin yap`
+  `echo "foo" >foobar`
 rescue => error
   puts error
   exit 1
